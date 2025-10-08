@@ -14,7 +14,7 @@
 	<version>1.0.0</version>
 	<name>outbox-spring-boot-starter</name>
 	<description></description>
-
+	<packaging>jar</packaging>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -41,20 +41,27 @@
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>repackage</id>
+						<phase>none</phase> 
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
 	<distributionManagement>
 		<repository>
 			<id>github</id>
 			<name>GitHub Packages</name>
-			<url>https://maven.pkg.github.com/nabarun-ngo/outbox-spring-boot-starter</url>
+			<url>
+				https://maven.pkg.github.com/nabarun-ngo/outbox-spring-boot-starter</url>
 		</repository>
 	</distributionManagement>
 </project>
