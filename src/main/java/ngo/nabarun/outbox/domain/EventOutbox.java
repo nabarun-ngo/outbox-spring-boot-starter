@@ -2,10 +2,14 @@ package ngo.nabarun.outbox.domain;
 
 import java.util.Date;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import ngo.nabarun.outbox.domain.enums.OutboxStatus;
 
 @Getter
+@Builder
+@AllArgsConstructor
 public class EventOutbox {
 	private final String id;
 	private final String eventType; // fully-qualified class name
@@ -17,7 +21,6 @@ public class EventOutbox {
 	private Date processFailedAt;
 	private Date processStartAt;
 	private Date processEndAt;
-
 	private String errorMessage;
 
 	public EventOutbox(String id, String type, String payload, int maxAttempts) {
