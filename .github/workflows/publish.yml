@@ -1,0 +1,37 @@
+name: 'PR: Build, Release & Publish'
+on:
+  pull_request:
+    paths-ignore:
+    - '.github/**'
+    types: [opened, synchronize, reopened,closed]
+    branches:
+    - main
+
+permissions:
+  contents: write
+  packages: write     
+
+jobs:
+  build:
+   name: Build Java Library
+   uses: nabarun-ngo/ngo-nabarun-templates/.github/workflows/Build-Test.yml@main
+   with:
+      platform: "java"
+      command: "clean install"
+      
+  create_release:
+    if: github.event.pull_request.merged == true
+    needs: build
+    name: Create Tag and Release
+    uses: nabarun-ngo/ngo-nabarun-templates/.github/workflows/Create-Tag-Release.yml@main
+    with:
+     source_branch: ${{ github.base_ref }}
+  
+  publish_package:
+    if: github.event.pull_request.merged == true
+    needs: create_release
+    name: Publish Package
+    uses: nabarun-ngo/ngo-nabarun-templates/.github/workflows/Publish-Package.yml@main    
+    with:
+      source_tag: ${{ needs.create_release.outputs.tag_name }}
+      package_manager: 'mvn'
