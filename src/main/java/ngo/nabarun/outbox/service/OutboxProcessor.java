@@ -2,6 +2,7 @@ package ngo.nabarun.outbox.service;
 
 import java.util.List;
 
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,7 @@ public class OutboxProcessor {
 
 	/** Immediate async processing for a newly saved event */
 	@Async
-    @Retryable(maxAttempts = Constant.MAX_RETRY, retryFor = {Exception.class})
+    @Retryable(maxAttempts = Constant.MAX_RETRY, retryFor = {Exception.class},backoff = @Backoff(delay = 5000,multiplier = 2))
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleOutboxSaved(OutboxCreatedEvent event) {
 		processById(event.outboxId());
