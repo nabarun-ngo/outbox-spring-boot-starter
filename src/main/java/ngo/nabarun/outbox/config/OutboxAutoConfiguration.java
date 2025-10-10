@@ -3,7 +3,6 @@ package ngo.nabarun.outbox.config;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +21,6 @@ import ngo.nabarun.outbox.service.OutboxPublisher;
 
 @Configuration
 @ConditionalOnMissingBean(OutboxProcessor.class)
-@AutoConfiguration
 @EnableAsync
 @EnableRetry
 public class OutboxAutoConfiguration {

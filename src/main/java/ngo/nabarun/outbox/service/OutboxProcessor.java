@@ -53,7 +53,8 @@ public class OutboxProcessor {
 		outboxRepositoryPort.findById(outboxId).ifPresent(this::processEventSafely);
 	}
 
-	/** Actual processing with retry logic and status update */
+	/** Actual processing with retry logic and status update 
+	 * @throws Exception */
 	private void processEventSafely(EventOutbox outboxEvent) {
 		try {
 			outboxEvent.markProcessing();
@@ -64,6 +65,7 @@ public class OutboxProcessor {
 		} catch (Exception e) {
 			outboxEvent.markFailed(e);
 			outboxRepositoryPort.save(outboxEvent);
+			throw new RuntimeException(e);
 		}
 	}
 }
