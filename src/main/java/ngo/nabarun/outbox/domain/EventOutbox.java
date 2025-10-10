@@ -5,7 +5,7 @@ import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import ngo.nabarun.common.util.ExceptionUtils;
+import ngo.nabarun.common.util.ExceptionUtil;
 import ngo.nabarun.outbox.domain.enums.OutboxStatus;
 
 @Getter
@@ -42,7 +42,7 @@ public class EventOutbox {
 	public void markFailed(Exception e) {
 		this.processFailedAt = new Date();
 		this.retryCount++;
-		this.errorMessage = this.errorMessage + "[Retry " + this.retryCount + "] -> " + ExceptionUtils.getExceptionDetails(e)+"\n";
+		this.errorMessage = this.errorMessage + "[Retry " + this.retryCount + "] -> " + ExceptionUtil.getExceptionDetails(e)+"\n";
 		if (this.retryCount >= this.maxAttempts) {
 			this.status = OutboxStatus.FAILED;
 		} else {
