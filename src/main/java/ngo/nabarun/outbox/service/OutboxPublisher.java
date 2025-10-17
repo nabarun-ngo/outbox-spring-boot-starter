@@ -35,10 +35,11 @@ public class OutboxPublisher implements AppEventPublisher {
 	 */
 	@Transactional
 	@Override
-	public void publishEvent(AppEvent appEvent) {
+	public void publishAppEvent(AppEvent appEvent) {
 		this.publishEvent(appEvent);
 	}
 
+	@Transactional
 	@Override
 	public <T> void publishEvent(T event) {
 		try {
