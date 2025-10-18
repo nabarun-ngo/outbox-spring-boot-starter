@@ -11,12 +11,16 @@ import ngo.nabarun.outbox.domain.port.EventOutboxRepositoryPort;
 
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OutboxPublisher implements AppEventPublisher {
+	
+	@Value("${outbox.retry.maxAttempts:5}")
+	private int maxAttempts;
 
 	private final EventOutboxRepositoryPort repo;
 	private final ObjectMapper objectMapper;
@@ -46,7 +50,7 @@ public class OutboxPublisher implements AppEventPublisher {
 			String id = UUID.randomUUID().toString();
 			String type = event.getClass().getName();
 			String payload = objectMapper.writeValueAsString(event);
-			EventOutbox e = new EventOutbox(id, type, payload, 5);
+			EventOutbox e = new EventOutbox(id, type, payload, maxAttempts);
 			repo.save(e);
 			eventPublisher.publishEvent(new OutboxCreatedEvent(e.getId()));
 		} catch (JsonProcessingException ex) {

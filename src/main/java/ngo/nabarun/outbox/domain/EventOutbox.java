@@ -23,6 +23,7 @@ public class EventOutbox {
 	private Date processStartAt;
 	private Date processEndAt;
 	private String errorMessage;
+	private String correlationId;
 
 	public EventOutbox(String id, String type, String payload, int maxAttempts) {
 		this.eventType = type;
@@ -32,6 +33,10 @@ public class EventOutbox {
 		this.status = OutboxStatus.PENDING;
 		this.maxAttempts = maxAttempts;
 		this.errorMessage = "";
+	}
+	
+	public void setCorrelation(String id) {
+		this.correlationId = id;
 	}
 
 	public void markProcessing() {
