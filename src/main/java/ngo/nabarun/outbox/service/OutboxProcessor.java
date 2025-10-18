@@ -2,8 +2,6 @@ package ngo.nabarun.outbox.service;
 
 import java.util.List;
 
-import org.springframework.retry.RetryCallback;
-import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -21,9 +19,10 @@ public class OutboxProcessor {
 
 	private final EventOutboxRepositoryPort outboxRepositoryPort;
 	private final AppEventDispatcher dispatcher;
-    private final RetryTemplate retryTemplate;
+	private final RetryTemplate retryTemplate;
 
-	public OutboxProcessor(EventOutboxRepositoryPort outboxRepositoryPort, AppEventDispatcher dispatcher,RetryTemplate retryTemplate) {
+	public OutboxProcessor(EventOutboxRepositoryPort outboxRepositoryPort, AppEventDispatcher dispatcher,
+			RetryTemplate retryTemplate) {
 		this.outboxRepositoryPort = outboxRepositoryPort;
 		this.dispatcher = dispatcher;
 		this.retryTemplate = retryTemplate;
@@ -33,13 +32,9 @@ public class OutboxProcessor {
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleOutboxSaved(OutboxCreatedEvent event) {
-		retryTemplate.execute(new RetryCallback<Integer, RuntimeException> (){
-			@Override
-			public Integer doWithRetry(RetryContext context) throws RuntimeException {
-				processById(event.outboxId());
-				return 1;
-			}
-			
+		retryTemplate.execute(context -> {
+			processById(event.outboxId());
+			return null;
 		});
 	}
 
@@ -61,8 +56,11 @@ public class OutboxProcessor {
 		outboxRepositoryPort.findById(outboxId).ifPresent(this::processEventSafely);
 	}
 
-	/** Actual processing with retry logic and status update 
-	 * @throws Exception */
+	/**
+	 * Actual processing with retry logic and status update
+	 * 
+	 * @throws Exception
+	 */
 	private void processEventSafely(EventOutbox outboxEvent) {
 		try {
 			outboxEvent.markProcessing();
