@@ -2,15 +2,15 @@ package ngo.nabarun.outbox.service;
 
 import java.util.List;
 
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import ngo.nabarun.event.dispatcher.AppEventDispatcher;
-import ngo.nabarun.outbox.Constant;
 import ngo.nabarun.outbox.domain.EventOutbox;
 import ngo.nabarun.outbox.domain.enums.OutboxStatus;
 import ngo.nabarun.outbox.domain.event.OutboxCreatedEvent;
@@ -21,18 +21,26 @@ public class OutboxProcessor {
 
 	private final EventOutboxRepositoryPort outboxRepositoryPort;
 	private final AppEventDispatcher dispatcher;
+    private final RetryTemplate retryTemplate;
 
-	public OutboxProcessor(EventOutboxRepositoryPort outboxRepositoryPort, AppEventDispatcher dispatcher) {
+	public OutboxProcessor(EventOutboxRepositoryPort outboxRepositoryPort, AppEventDispatcher dispatcher,RetryTemplate retryTemplate) {
 		this.outboxRepositoryPort = outboxRepositoryPort;
 		this.dispatcher = dispatcher;
+		this.retryTemplate = retryTemplate;
 	}
 
 	/** Immediate async processing for a newly saved event */
 	@Async
-    @Retryable(maxAttempts = Constant.MAX_RETRY, retryFor = {Exception.class},backoff = @Backoff(delay = 5000,multiplier = 2))
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleOutboxSaved(OutboxCreatedEvent event) {
-		processById(event.outboxId());
+		retryTemplate.execute(new RetryCallback<Integer, RuntimeException> (){
+			@Override
+			public Integer doWithRetry(RetryContext context) throws RuntimeException {
+				processById(event.outboxId());
+				return 1;
+			}
+			
+		});
 	}
 
 	/** Opportunistic retry: process pending events on incoming request */
